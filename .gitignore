@@ -1,0 +1,7 @@
+# colcon build output
+build/
+install/
+log/
+
+# Editor settings
+.vscode/
