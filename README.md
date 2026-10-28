@@ -13,29 +13,25 @@ colcon build --symlink-install
 
 ## Run the simulation
 
-**Terminal 1 – start the simulation**
+
+Then press ▶ in Gazebo.
+
+**Terminal 1 – activate the controllers**
+
+```bash
+source install/setup.bash
+ros2 control switch_controllers --activate joint_state_broadcaster diffdrive_controller
+
+```
+**Terminal 2 – start the simulation**
 
 ```bash
 cd <path-to>/create3_ws
 source install/setup.bash
 export LIBGL_ALWAYS_SOFTWARE=1
-ros2 launch irobot_create_gz_bringup create3_gz.launch.py world:=maze visualize_rays:=false
+ros2 launch irobot_create_gz_bringup create3_gz.launch.py world:=arena visualize_rays:=false spawn_dock:=false
 ```
 
-** Start diferent**
-
-colcon build --packages-select irobot_create_gz_bringup && source install setup.bash
-ros2 launch irobot_create_gz_bringup create3_gz.launch.py world:=arena
-
-
-Then press ▶ in Gazebo.
-
-**Terminal 2 – activate the controllers**
-
-```bash
-source install/setup.bash
-ros2 control switch_controllers --activate joint_state_broadcaster diffdrive_controller
-```
 
 **Terminal 3 – drive with the keyboard** (`i` / `j` / `l` / `k`)
 
