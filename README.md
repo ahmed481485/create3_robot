@@ -22,6 +22,12 @@ export LIBGL_ALWAYS_SOFTWARE=1
 ros2 launch irobot_create_gz_bringup create3_gz.launch.py world:=maze visualize_rays:=false
 ```
 
+** Start diferent**
+
+colcon build --packages-select irobot_create_gz_bringup && source install setup.bash
+ros2 launch irobot_create_gz_bringup create3_gz.launch.py world:=arena
+
+
 Then press ▶ in Gazebo.
 
 **Terminal 2 – activate the controllers**
