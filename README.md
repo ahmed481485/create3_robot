@@ -92,6 +92,29 @@ ros2 launch slam_toolbox online_async_launch.py slam_params_file:=src/create3_si
 - RViz: `rviz2 --ros-args -p use_sim_time:=true`, Fixed Frame `map`, add a Map display on `/map`.
 - Save from RViz (Panels → SlamToolbox) with a full path like `/home/ahmed/maps/arena`. **Save Map** writes `.pgm`/`.yaml` for Nav2 and needs `ros-jazzy-nav2-map-server`. **Serialize Map** writes a pose graph that slam_toolbox can reload.
 
+## SLAM on the real robot (Humble, untested)
+
+Run everything on the robot side with Humble. Install `ros-humble-slam-toolbox` and `sllidar_ros2`.
+
+```bash
+# 1. Lidar driver (computer the C1 is plugged into)
+ros2 launch sllidar_ros2 sllidar_c1_launch.py serial_port:=/dev/ttyUSB0 frame_id:=rplidar_scan_frame
+
+# 2. Lidar position on the robot (measure the real height of the laser above the floor)
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0.126 --frame-id base_link --child-frame-id rplidar_scan_frame
+
+# 3. Check odometry (published by the Create 3 itself, no controllers to activate)
+ros2 run tf2_ros tf2_echo odom base_link
+
+# 4. SLAM: sim time must be false
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=<path>/mapper_params_online_async.yaml use_sim_time:=false
+```
+
+- Serial "permission denied": `sudo usermod -aG dialout $USER`, then log in again.
+- Sync the clocks of the companion computer and the Create 3 (NTP / `chrony`). Otherwise you get "Failed to compute odom pose" or TF extrapolation errors.
+- `ROS_DOMAIN_ID` and `RMW_IMPLEMENTATION` must match the robot's web interface settings.
+- RViz: plain `rviz2`, without sim time.
+
 ## RPLIDAR C1 (simulation)
 
 An RPLIDAR C1 sits on top of the robot, centred. Its scans are published on `/scan` (`sensor_msgs/LaserScan`).
