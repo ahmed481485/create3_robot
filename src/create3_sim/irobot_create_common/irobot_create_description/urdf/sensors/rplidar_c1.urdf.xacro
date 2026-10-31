@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!--
+  Slamtec RPLIDAR C1 2D laser scanner.
+  The origin passed in is the point where the bottom of the lidar touches
+  its mount; the lidar link itself is placed at the scan plane.
+-->
+<xacro:macro name="rplidar_c1" params="name:=rplidar gazebo namespace parent:=base_link
+                                        visualize:=false *origin">
+  <!-- Datasheet values -->
+  <xacro:property name="mass"          value="0.110"/>
+  <xacro:property name="size_xy"       value="${55.6*mm2m}"/>
+  <xacro:property name="size_z"        value="${41.3*mm2m}"/>
+  <!-- Height of the scan plane above the bottom of the lidar (approx.) -->
+  <xacro:property name="scan_plane_z"  value="${31*mm2m}"/>
+  <xacro:property name="update_rate"   value="10"/>
+  <!-- 5 kHz sample rate @ 10 Hz scan rate = 500 samples (0.72 deg) per turn -->
+  <xacro:property name="samples"       value="500"/>
+  <xacro:property name="min_range"     value="${5*cm2m}"/>
+  <xacro:property name="max_range"     value="12.0"/>
+  <xacro:property name="range_stddev"  value="${1*cm2m}"/>
+
+  <xacro:property name="link_name"     value="${name}_scan_frame"/>
+
+  <joint name="${name}_body_joint" type="fixed">
+    <xacro:insert_block name="origin"/>
+    <parent link="${parent}"/>
+    <child link="${name}_body"/>
+  </joint>
+
+  <link name="${name}_body">
+    <visual>
+      <origin xyz="0 0 ${size_z/2}"/>
+      <geometry>
+        <cylinder radius="${size_xy/2}" length="${size_z}"/>
+      </geometry>
+      <xacro:insert_block name="material_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 ${size_z/2}"/>
+      <geometry>
+        <cylinder radius="${size_xy/2}" length="${size_z}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder_with_pose mass="${mass}" radius="${size_xy/2}" length="${size_z}">
+      <origin xyz="0 0 ${size_z/2}"/>
+    </xacro:inertial_cylinder_with_pose>
+  </link>
+
+  <joint name="${name}_joint" type="fixed">
+    <origin xyz="0 0 ${scan_plane_z}"/>
+    <parent link="${name}_body"/>
+    <child link="${link_name}"/>
+  </joint>
+
+  <link name="${link_name}">
+    <xacro:inertial_dummy/>
+  </link>
+
+  <gazebo reference="${name}_body_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+
+  <gazebo reference="${name}_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+
+  <xacro:if value="${gazebo == 'ignition'}">
+    <gazebo reference="${name}_body">
+      <xacro:material_black/>
+    </gazebo>
+
+    <gazebo reference="${link_name}">
+      <sensor name="${name}" type="gpu_lidar">
+        <xacro:if value="${namespace == ''}">
+          <topic>/scan</topic>
+        </xacro:if>
+        <xacro:if value="${namespace != ''}">
+          <topic>${namespace}/scan</topic>
+        </xacro:if>
+        <gz_frame_id>${link_name}</gz_frame_id>
+        <update_rate>${update_rate}</update_rate>
+        <visualize>${visualize}</visualize>
+        <always_on>true</always_on>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>${samples}</samples>
+              <resolution>1.0</resolution>
+              <min_angle>${-pi}</min_angle>
+              <max_angle>${pi - 2*pi/samples}</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>1.0</resolution>
+              <min_angle>0</min_angle>
+              <max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>${min_range}</min>
+            <max>${max_range}</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>${range_stddev}</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+</xacro:macro>
+
+</robot>

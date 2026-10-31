@@ -9,6 +9,7 @@
   <xacro:include filename="$(find irobot_create_description)/urdf/sensors/ir_intensity.urdf.xacro" />
   <xacro:include filename="$(find irobot_create_description)/urdf/sensors/ir_opcode_receivers.urdf.xacro" />
   <xacro:include filename="$(find irobot_create_description)/urdf/sensors/optical_mouse.urdf.xacro"/>
+  <xacro:include filename="$(find irobot_create_description)/urdf/sensors/rplidar_c1.urdf.xacro"/>
   <xacro:include filename="$(find irobot_create_description)/urdf/wheel_with_wheeldrop.urdf.xacro" />
 
   <!-- Gazebo version -->
@@ -51,6 +52,9 @@
   <xacro:property name="wheel_drop_z"            value="${wheel_height + wheel_drop_offset_z}"/>
 
   <xacro:property name="base_link_z_offset"     value="${6.42*cm2m}"/>
+
+  <!-- Top surface of the body mesh, measured from base_link -->
+  <xacro:property name="body_top_z"             value="${9.47*cm2m}"/>
 
   <!-- Docking properties -->
   <xacro:property name="robot_model_name" value="create3"/>
@@ -116,6 +120,11 @@
   <xacro:imu_sensor gazebo="$(arg gazebo)" namespace="$(arg namespace)">
     <origin xyz="0.050613 0.043673 ${0.0202 + base_link_z_offset}"/>
   </xacro:imu_sensor>
+
+  <!-- RPLIDAR C1, centered on top of the robot -->
+  <xacro:rplidar_c1 gazebo="$(arg gazebo)" namespace="$(arg namespace)" visualize="$(arg visualize_rays)">
+    <origin xyz="0 0 ${body_top_z}"/>
+  </xacro:rplidar_c1>
 
   <xacro:if value="${'$(arg gazebo)' == 'classic'}">
     <gazebo>
