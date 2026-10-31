@@ -78,6 +78,20 @@ ros2 launch irobot_create_common_bringup robot_description.launch.py use_sim_tim
 rviz2
 ```
 
+## SLAM (slam_toolbox)
+
+With the simulation running and the controllers active:
+
+```bash
+source install/setup.bash
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=src/create3_sim/config/mapper_params_online_async.yaml use_sim_time:=true
+```
+
+- The argument is `slam_params_file`, not `params_file`. Unknown arguments are silently ignored.
+- Use `use_sim_time:=true` in sim and `false` on the real robot.
+- RViz: `rviz2 --ros-args -p use_sim_time:=true`, Fixed Frame `map`, add a Map display on `/map`.
+- Save from RViz (Panels → SlamToolbox) with a full path like `/home/ahmed/maps/arena`. **Save Map** writes `.pgm`/`.yaml` for Nav2 and needs `ros-jazzy-nav2-map-server`. **Serialize Map** writes a pose graph that slam_toolbox can reload.
+
 ## RPLIDAR C1 (simulation)
 
 An RPLIDAR C1 sits on top of the robot, centred. Its scans are published on `/scan` (`sensor_msgs/LaserScan`).
