@@ -48,36 +48,6 @@ pkill -f "gz sim"
 pkill -9 vmware-vmx
 ```
 
-## Real robot with RViz
-
-**Check the connection**
-
-```bash
-ros2 topic list
-
-# Check ROS settings
-echo $ROS_DOMAIN_ID
-echo $RMW_IMPLEMENTATION
-```
-
-**Terminal 1 – drive**
-
-```bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
-```
-
-**Terminal 2 – robot model (optional)**
-
-```bash
-ros2 launch irobot_create_common_bringup robot_description.launch.py use_sim_time:=false
-```
-
-**Terminal 3 – RViz**
-
-```bash
-rviz2
-```
-
 ## SLAM (slam_toolbox)
 
 With the simulation running and the controllers active:
@@ -114,6 +84,33 @@ ros2 launch slam_toolbox online_async_launch.py slam_params_file:=<path>/mapper_
 - Sync the clocks of the companion computer and the Create 3 (NTP / `chrony`). Otherwise you get "Failed to compute odom pose" or TF extrapolation errors.
 - `ROS_DOMAIN_ID` and `RMW_IMPLEMENTATION` must match the robot's web interface settings.
 - RViz: plain `rviz2`, without sim time.
+
+## Robot model on the real robot (Humble, untested)
+
+Build only the three description packages (the stock apt version has no lidar):
+
+| Package | Why |
+|---|---|
+| `irobot_create_description` | URDF/xacro with the lidar, meshes |
+| `irobot_create_control` | the xacro looks up `$(find irobot_create_control)`, so it must be installed |
+| `irobot_create_common_bringup` | `robot_description.launch.py`, RViz config |
+
+```bash
+git clone https://github.com/ahmed481485/create3_robot.git ~/create3_ws
+cd ~/create3_ws
+source /opt/ros/humble/setup.bash
+sudo apt install ros-humble-xacro ros-humble-robot-state-publisher ros-humble-joint-state-publisher ros-humble-rviz2
+colcon build --packages-select irobot_create_control irobot_create_description irobot_create_common_bringup
+source install/setup.bash
+
+# Model + TF (base_link → all links, incl. rplidar_scan_frame)
+ros2 launch irobot_create_common_bringup robot_description.launch.py gazebo:=ignition use_sim_time:=false
+rviz2
+```
+
+- RViz: Fixed Frame `odom` (`map` if SLAM is running). Add a RobotModel display on `/robot_description`.
+- This replaces the `static_transform_publisher` from the SLAM section. Run one or the other, not both.
+- Set the measured lidar height in the URDF first (`<origin>` in `create3.urdf.xacro`, `scan_plane_z`).
 
 ## RPLIDAR C1 (simulation)
 

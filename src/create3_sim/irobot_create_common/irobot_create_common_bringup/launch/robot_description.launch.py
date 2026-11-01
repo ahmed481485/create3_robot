@@ -20,6 +20,9 @@ ARGUMENTS = [
                           description='Enable/disable ray visualization'),
     DeclareLaunchArgument('namespace', default_value='',
                           description='Robot namespace'),
+    DeclareLaunchArgument('use_sim_time', default_value='true',
+                          choices=['true', 'false'],
+                          description='Use sim time'),
 ]
 
 
@@ -29,6 +32,7 @@ def generate_launch_description():
     gazebo_simulator = LaunchConfiguration('gazebo')
     visualize_rays = LaunchConfiguration('visualize_rays')
     namespace = LaunchConfiguration('namespace')
+    use_sim_time = LaunchConfiguration('use_sim_time')
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -36,7 +40,7 @@ def generate_launch_description():
         name='robot_state_publisher',
         output='screen',
         parameters=[
-            {'use_sim_time': True},
+            {'use_sim_time': use_sim_time},
             {'robot_description':
              Command(
                   ['xacro', ' ', xacro_file, ' ',
@@ -55,7 +59,7 @@ def generate_launch_description():
         executable='joint_state_publisher',
         name='joint_state_publisher',
         output='screen',
-        parameters=[{'use_sim_time': True}],
+        parameters=[{'use_sim_time': use_sim_time}],
         remappings=[
             ('/tf', 'tf'),
             ('/tf_static', 'tf_static')
