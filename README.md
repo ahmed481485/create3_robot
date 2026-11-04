@@ -100,7 +100,8 @@ git clone https://github.com/ahmed481485/create3_robot.git ~/create3_ws
 cd ~/create3_ws
 source /opt/ros/humble/setup.bash
 sudo apt install ros-humble-xacro ros-humble-robot-state-publisher ros-humble-joint-state-publisher ros-humble-rviz2
-colcon build --packages-select irobot_create_control irobot_create_description irobot_create_common_bringup
+colcon build --packages-select irobot_create_control irobot_create_description irobot_create_common_bringup \
+  --packages-ignore irobot_create_nodes irobot_create_msgs   # bringup lists nodes as a dependency, but the model doesn't need it
 source install/setup.bash
 
 # Model + TF (base_link → all links, incl. rplidar_scan_frame)
